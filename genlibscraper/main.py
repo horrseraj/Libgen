@@ -21,10 +21,12 @@ database_manager = DatabaseManager(
 
 def run_spider(key, format, path):
     output_filename = f'{path}/output.{format}'
-    process = CrawlerProcess(settings={
+    process = CrawlerProcess(
+        settings={
         'FEED_FORMAT': format,
         'FEED_URI': output_filename,
-    })
+    }
+    )
     process.crawl(GenlibSpider, search_key=key)
     process.start()
 

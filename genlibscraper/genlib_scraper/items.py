@@ -2,9 +2,7 @@ import scrapy
 
 
 class SearchKeyItem(scrapy.Item):
-    id = scrapy.Field()
     search_key = scrapy.Field()
-    search_date = scrapy.Field()
 
 
 class SearchResultItem(scrapy.Item):
@@ -46,6 +44,8 @@ class BookItem(scrapy.Item):
     pages_biblio = scrapy.Field()
     pages_tech = scrapy.Field()
     html = scrapy.Field()
+    file_urls = scrapy.Field()
+    files = scrapy.Field()
 
 
 class AuthorItem(scrapy.Item):

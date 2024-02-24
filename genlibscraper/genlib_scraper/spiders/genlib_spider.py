@@ -1,7 +1,7 @@
 from typing import Any, Optional
 import scrapy
 
-# from genlib_scraper.items import BookItem
+from genlib_scraper.items import BookItem
 from models import SearchKey, SearchResult, Author, Book, BookAuthor
 
 
@@ -23,10 +23,9 @@ class GenlibSpider(scrapy.Spider):
             search_id = new_search.id
             
             url = f'{self.base_url}search.php?req={search_key}'
-            yield scrapy.Request(url, callback=self.find_pages, meta={'search_id': search_id})
+            yield scrapy.Request(url, callback=self.find_pages, cb_kwargs={'search_id': search_id})
 
-
-    def find_pages(self, response):
+    def find_pages(self, response, search_id):
         # Finding number of result pages
         results = response.css('table tr td font::text').get()
         num_results, *other = results.split(" ")
@@ -37,15 +36,15 @@ class GenlibSpider(scrapy.Spider):
                 (num_results % self.result_per_page > 0)
             self.pages_to_scrape = pages
 
-        search_id = response.meta['search_id']
+        # search_id = response.meta['search_id']
         for i in range(self.pages_to_scrape):
             url = f'{response.url}&page={i+1}'
             #    &open=0&res=25&view=simple&phrase=1&column=def'  # &page={i}'
-            yield scrapy.Request(url, callback=self.parse, meta={'search_id': search_id})
+            yield scrapy.Request(url, callback=self.parse, cb_kwargs={'search_id': search_id})
 
-    def parse(self, response):
+    def parse(self, response, search_id):
         # Extracting search results
-        search_id = response.meta['search_id']
+        # search_id = response.meta['search_id']
         # Skip the first <tr> element (header)
         trs = response.css('table.c tr')[1:]
         for tr in trs:
@@ -90,9 +89,9 @@ class GenlibSpider(scrapy.Spider):
                 Book.get(Book.id == book_id)
             except Book.DoesNotExist:
                 link = self.base_url + link
-                yield scrapy.Request(link, callback=self.parse_book, meta={'authors': author_names})
+                yield scrapy.Request(link, callback=self.parse_book, cb_kwargs={'authors': author_names})
 
-    def parse_book(self, response):
+    def parse_book(self, response, authors):
         # self.logger.info('Entering parse_book method')
         # self.logger.info('Response URL: %s', response.url)
         # self.logger.info('Response status: %s', response.status)
@@ -154,7 +153,7 @@ class GenlibSpider(scrapy.Spider):
                 if tr_index == 20 and td_index == 2:
                     worse_versions = td.css('::text').get()
                 if tr_index == 21 and td_index == 2:
-                    Desr_old_vers = td.css('::text').get()
+                    desr_old_vers = td.css('::text').get()
                 if tr_index == 22 and td_index == 2:
                     commentary = td.css('::text').get()
                 if tr_index == 23 and td_index == 2:
@@ -182,7 +181,7 @@ class GenlibSpider(scrapy.Spider):
             size=size,
             extension=extension,
             worse_versions=worse_versions,
-            Desr_old_vers=Desr_old_vers,
+            Desr_old_vers=desr_old_vers,
             commentary=commentary,
             topic=topic,
             tags=tags,
@@ -194,8 +193,8 @@ class GenlibSpider(scrapy.Spider):
             html=html
         )
         # Insert Authors if they already dont exist
-        author_names = response.meta['authors']
-        for auth in author_names:
+        # author_names = response.meta['authors']
+        for auth in authors:
             try:
                 author = Author.get(Author.name == auth)
             except Author.DoesNotExist:
@@ -205,10 +204,48 @@ class GenlibSpider(scrapy.Spider):
                 BookAuthor.create(book_id=new_book.id,
                                   author_id=author.id)
                 
+        item = BookItem()
+        item['id'] = id
+        item["title"] = title
+        item['series'] = series
+        item['publisher'] = publisher
+        item['year'] = year
+        item['language'] = language
+        item['isbn10'] = isbn10
+        item['isbn13'] = isbn13
+        item['time_added'] = time_added
+        item['time_modified'] = time_modified
+        item['library'] = library
+        item['library_issue'] = library_issue
+        item['size'] = size
+        item['extension'] = extension
+        item['worse_versions'] = worse_versions
+        item['Desr_old_vers'] = desr_old_vers
+        item['commentary'] = commentary
+        item['topic'] = topic
+        item['tags'] = tags
+        item['periodical'] = periodical
+        item['city'] = city
+        item['edition'] = edition
+        item['pages_biblio'] = pages_biblio
+        item['pages_tech'] = pages_tech
+        item['file_urls'] = download_url
+        
+        yield item
         ext = extension
-        yield scrapy.Request(download_url, callback=self.parse_file, meta={'file_name': id+'_file.'+extension})
+        # yield scrapy.Request(download_url, callback=self.parse_file, meta={'file_name': id+'_file.'+extension})
+        # yield {
+            
+        #     'file_urls': [download_url]
+        # }
+        
         ext = image_url.split('.')[-1]
-        yield scrapy.Request(self.base_url + image_url, callback=self.parse_file, meta={'file_name': id+'_pic.'+ext})
+        # yield scrapy.Request(self.base_url + image_url, callback=self.parse_file, meta={'file_name': id+'_pic.'+ext})
+        # yield {
+        #     'title': title,
+        #     'file_urls': [self.base_url + image_url]
+        # }
+        
 
     def parse_file(self, response):
         # save the file

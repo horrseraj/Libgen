@@ -63,13 +63,13 @@ USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTM
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 
-# ITEM_PIPELINES = {
-#     'scrapy.pipelines.files.FilesPipeline': 1,
+ITEM_PIPELINES = {
+     'scrapy.pipelines.files.FilesPipeline': 1,
 #     'scrapy.pipelines.images.ImagesPipeline': 2,
-#     'genlib_scraper.pipelines.GenlibScraperPipeline': 300,
-# }
+     #'genlib_scraper.pipelines.GenlibScraperPipeline': 300,
+}
 
-# FILES_STORE = '/path/to/your/directory'
+FILES_STORE = 'downloaded'
 # IMAGES_STORE = '/path/to/your/directory'
 
 # Enable and configure the AutoThrottle extension (disabled by default)
@@ -94,6 +94,6 @@ HTTPCACHE_ENABLED = True
 # HTTPCACHE_STORAGE = "scrapy.extensions.httpcache.FilesystemCacheStorage"
 
 # Set settings whose default value is deprecated to a future-proof value
-REQUEST_FINGERPRINTER_IMPLEMENTATION = "2.7"
-TWISTED_REACTOR = "twisted.internet.asyncioreactor.AsyncioSelectorReactor"
-FEED_EXPORT_ENCODING = "utf-8"
+# REQUEST_FINGERPRINTER_IMPLEMENTATION = "2.7"
+# TWISTED_REACTOR = "twisted.internet.asyncioreactor.AsyncioSelectorReactor"
+# FEED_EXPORT_ENCODING = "utf-8"

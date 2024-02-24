@@ -86,8 +86,8 @@ class Book(peewee.Model):
 
 
 class BookAuthor(peewee.Model):
-    book_id = peewee.ForeignKeyField(Book, backref='authors')
-    author_id = peewee.ForeignKeyField(Author, backref='books')
+    book_id = peewee.ForeignKeyField(Book, backref='authors', on_delete='CASCADE')
+    author_id = peewee.ForeignKeyField(Author, backref='books', on_delete='CASCADE')
 
     class Meta:
         database = database_manager.db
