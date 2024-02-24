@@ -57,11 +57,11 @@ class Book(peewee.Model):
     title = peewee.TextField(null=False, verbose_name='Title')
     series = peewee.TextField(null=True, verbose_name='Series')
     publisher = peewee.TextField(null=True, verbose_name='Publisher')
-    year = peewee.IntegerField(null=True, verbose_name='Year')
+    year = peewee.TextField(null=True, verbose_name='Year')
     language = peewee.CharField(
         max_length=50, null=True, verbose_name='Language')
-    isbn10 = peewee.CharField(max_length=10, null=True, verbose_name='ISBN10')
-    isbn13 = peewee.CharField(max_length=13, null=True, verbose_name='ISBN13')
+    isbn10 = peewee.TextField(null=True, verbose_name='ISBN10')
+    isbn13 = peewee.TextField(null=True, verbose_name='ISBN13')
     time_added = peewee.TextField(null=True, verbose_name='TimeAdded')
     time_modified = peewee.TextField(null=True, verbose_name='TimeModified')
     library = peewee.TextField(null=True, verbose_name='Library')
@@ -77,8 +77,8 @@ class Book(peewee.Model):
     periodical = peewee.TextField(null=True, verbose_name='Periodical')
     city = peewee.TextField(null=True, verbose_name='City')
     edition = peewee.TextField(null=True, verbose_name='Edition')
-    pages_biblio = peewee.IntegerField(null=True, verbose_name='PagesBiblio')
-    pages_tech = peewee.IntegerField(null=True, verbose_name='PagesTech')
+    pages_biblio = peewee.TextField(null=True, verbose_name='PagesBiblio')
+    pages_tech = peewee.TextField(null=True, verbose_name='PagesTech')
     html = peewee.TextField(verbose_name='HTML')
 
     class Meta:
