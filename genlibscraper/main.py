@@ -24,9 +24,9 @@ def run_spider(key, format, path):
     output_filename = f'{path}/output.{format}'
     process = CrawlerProcess(
         settings={
-        'FEED_FORMAT': format,
-        'FEED_URI': output_filename,
-    }
+            'FEED_FORMAT': format,
+            'FEED_URI': output_filename,
+        }
     )
     process.crawl(GenlibSpider, search_key=key)
     process.start()
@@ -38,6 +38,8 @@ def validate_arguments(args):
         sys.exit(1)
     if not os.path.exists('./output'):
         os.makedirs('./output')
+    if not os.path.exists('./downloaded'):
+        os.makedirs('./downloaded')
 
 
 if __name__ == "__main__":
@@ -55,14 +57,13 @@ if __name__ == "__main__":
 
     try:
         os.makedirs(path)
-        os.makedirs('downloaded')
 
         database_manager.create_tables(
             models=[SearchKey, SearchResult, Author, Book, BookAuthor])
 
         run_spider(args.key, args.format, path)
 
-        # Move downloaded resources 
+        # Move downloaded resources
         source_dir = 'downloaded'
         target_dir = path
         file_names = os.listdir(source_dir)
