@@ -21,7 +21,7 @@ class GenlibSpider(scrapy.Spider):
             # Inser into SearchKey
             new_search = SearchKey.create(search_key=search_key)
             search_id = new_search.id
-            
+
             url = f'{self.base_url}search.php?req={search_key}'
             yield scrapy.Request(url, callback=self.find_pages, cb_kwargs={'search_id': search_id})
 
@@ -55,7 +55,8 @@ class GenlibSpider(scrapy.Spider):
             authors = ', '.join(author_names)
             title = tr.css('td:nth-of-type(3) a::text').get()
             # link = tr.css('td:nth-child(3) > a:not(:has(font))::attr(href)').get()
-            link = tr.xpath('td[3]/a[starts-with(@href, "book")]/@href').extract_first()
+            link = tr.xpath(
+                'td[3]/a[starts-with(@href, "book")]/@href').extract_first()
             publisher = tr.css('td:nth-of-type(4)::text').get()
             year = tr.css('td:nth-of-type(5)::text').get()
             pages = tr.css('td:nth-of-type(6)::text').get()
@@ -203,7 +204,7 @@ class GenlibSpider(scrapy.Spider):
                 # Insert BookAuthor
                 BookAuthor.create(book_id=new_book.id,
                                   author_id=author.id)
-                
+
         item = BookItem()
         item['id'] = id
         item["title"] = title
@@ -229,28 +230,36 @@ class GenlibSpider(scrapy.Spider):
         item['edition'] = edition
         item['pages_biblio'] = pages_biblio
         item['pages_tech'] = pages_tech
-        item['file_urls'] = download_url
-        
-        yield item
-        ext = extension
+        # item['file_urls'] = download_url
+
         # yield scrapy.Request(download_url, callback=self.parse_file, meta={'file_name': id+'_file.'+extension})
         # yield {
-            
+
         #     'file_urls': [download_url]
         # }
-        
+
         ext = image_url.split('.')[-1]
-        # yield scrapy.Request(self.base_url + image_url, callback=self.parse_file, meta={'file_name': id+'_pic.'+ext})
+        file_name = f'downloaded/{id}_pic.{ext}'
+        link = self.base_url + image_url
+        yield scrapy.Request(link, self.parse_file, cb_kwargs={'file_name': file_name})
         # yield {
         #     'title': title,
         #     'file_urls': [self.base_url + image_url]
         # }
-        
+        yield scrapy.Request(download_url, callback=self.download, cb_kwargs={'item': item})
+        # yield item
 
-    def parse_file(self, response):
+    def download(self, response, item):
+        div = response.css('div#download')
+        download_url = div.css('a::attr(href)').get()
+        item['file_urls'] = download_url
+        ext = item['extension']
+        book_id = item['id']
+        file_name = f'downloaded/{book_id}_file.{ext}'
+        yield item
+        yield scrapy.Request(download_url, self.parse_file, cb_kwargs={'file_name': file_name})
+
+    def parse_file(self, response, file_name):
         # save the file
-        file_name= response.meta['file_name']
         with open(file_name, 'wb') as f:
             f.write(response.body)
-
-

@@ -3,6 +3,7 @@ import argparse
 from datetime import datetime
 import os
 import sys
+import shutil
 
 from genlib_scraper.spiders.genlib_spider import GenlibSpider
 from models import SearchKey, SearchResult, Author, Book, BookAuthor
@@ -54,11 +55,23 @@ if __name__ == "__main__":
 
     try:
         os.makedirs(path)
+        os.makedirs('downloaded')
 
         database_manager.create_tables(
             models=[SearchKey, SearchResult, Author, Book, BookAuthor])
 
         run_spider(args.key, args.format, path)
+
+        # Move downloaded resources 
+        source_dir = 'downloaded'
+        target_dir = path
+        file_names = os.listdir(source_dir)
+        for file_name in file_names:
+            shutil.move(os.path.join(source_dir, file_name), target_dir)
+
+        # zip folder
+        shutil.make_archive(path, 'zip', path)
+        print(path)
     except OSError as e:
         print(f"Error: Failed to create output directory: {e}")
         sys.exit(1)
